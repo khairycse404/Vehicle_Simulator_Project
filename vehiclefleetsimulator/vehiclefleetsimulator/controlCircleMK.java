@@ -15,8 +15,7 @@ public class controlCircleMK extends Application {
     @Override
     public void start(Stage stage) {
 
-        
-        double[] targetConstantSpeed = {-1}; 
+        double[] targetConstantSpeed = {-1};
 
         HBox root = new HBox(30);
         root.setAlignment(Pos.CENTER);
@@ -154,13 +153,12 @@ public class controlCircleMK extends Application {
         TextField txtConst = new TextField("");
         txtConst.setStyle(inputStyle);
 
-       
         txtConst.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.trim().isEmpty()) {
-                targetConstantSpeed[0] = -1; 
+                targetConstantSpeed[0] = -1;
                 for (Trackable t : Trackable.observed) {
                     if (t instanceof Vehicle v) {
-                        v.setSpeed(0.9); 
+                        v.setSpeed(0.9);
                     }
                 }
             }
@@ -229,20 +227,36 @@ public class controlCircleMK extends Application {
             }
         });
 
-   
         apply.setOnAction(e -> {
             try {
                 if (!txtConst.getText().trim().isEmpty()) {
                     targetConstantSpeed[0] = Double.parseDouble(txtConst.getText().trim());
                 }
             } catch (NumberFormatException ex) {
-                
+
             }
         });
+
+        final long[] lastDashboardUpdate = {0};
 
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
+
+                if (targetConstantSpeed[0] != -1) {
+                    for (Trackable t : Trackable.observed) {
+                        if (t instanceof Vehicle v) {
+                            v.setSpeed(targetConstantSpeed[0]);
+                        }
+                    }
+                }
+
+                if (now - lastDashboardUpdate[0] < 500_000_000) {
+                    return;
+                }
+
+                lastDashboardUpdate[0] = now;
+
                 int countL = 0;
                 int countW = 0;
                 int countA = 0;
@@ -253,11 +267,6 @@ public class controlCircleMK extends Application {
                 int vehicleCount = 0;
 
                 for (Trackable t : Trackable.observed) {
-
-
-                    if (t instanceof Vehicle v && targetConstantSpeed[0] != -1) {
-                        v.setSpeed(targetConstantSpeed[0]);
-                    }
 
                     if (t instanceof LandVehicle) {
                         if (t instanceof Vehicle v && v.getCenterX() > 0 && v.getCenterY() > 0) {
