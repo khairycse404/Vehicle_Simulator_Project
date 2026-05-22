@@ -141,6 +141,7 @@ public class Testing extends Application {
         stage.setTitle("Vehicle Fleet Simulator");
         stage.setScene(scene);
         stage.show();
+        HelloApplication.setSimulationStage(stage);
     }
 
     public static void main(String[] args) {
