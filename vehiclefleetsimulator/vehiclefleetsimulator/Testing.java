@@ -1,4 +1,3 @@
-// Testing.java
 package com.vehiclefleetsimulator.vehiclefleetsimulator;
 
 import javafx.animation.KeyFrame;
@@ -17,34 +16,11 @@ public class Testing extends Application {
     public void start(Stage stage) throws Exception {
         Map root = new Map();
         Scene scene = new Scene(root, root.mapWidth, root.mapHeight);
-//scene.setOnKeyPressed(e -> {
-//
-//    if (Vehicle.focusedVehicle == null)
-//        return;
-//
-//    switch (e.getCode()) {
-//
-//        case RIGHT -> {
-//            Vehicle.focusedVehicle.turnRight();
-//        }
-//
-//        case LEFT -> {
-//            Vehicle.focusedVehicle.turnLeft();
-//        }
-//
-//        case SPACE -> {
-//            Vehicle.focusedVehicle.moveZ(1);
-//        }
-//
-//        case C -> {
-//            Vehicle.focusedVehicle.moveZ(-1);
-//        }
-//    }
-//});
+
         List<Vehicle> allVehicles = new ArrayList<>();
 
-        // --- Land vehicles (spawn on road) ---
         int c = 0;
+
         for (int i = 0; i < 2; i++) {
             double[] spawn = Map.LAND_SPAWN_POINTS.get(c);
             ++c;
@@ -54,6 +30,7 @@ public class Testing extends Application {
                     .setCenterZ(0).setMass(50).speed(5).direction(0).acceleration(0.009)
                     .build());
         }
+
         for (int i = 0; i < 1; i++) {
             double[] spawn = Map.LAND_SPAWN_POINTS.get(c * 2);
             ++c;
@@ -63,6 +40,7 @@ public class Testing extends Application {
                     .setCenterZ(0).setMass(200).speed(3).direction(0).acceleration(0.005)
                     .build());
         }
+
         for (int i = 0; i < 1; i++) {
             double[] spawn = Map.LAND_SPAWN_POINTS.get(c);
             ++c;
@@ -73,7 +51,6 @@ public class Testing extends Application {
                     .build());
         }
 
-        // --- Water vehicles (spawn on sea) ---
         for (int i = 0; i < 1; i++) {
             double[] spawn = Map.WATER_SPAWN_POINTS.get(c);
             ++c;
@@ -83,6 +60,7 @@ public class Testing extends Application {
                     .setCenterZ(0).setMass(500).speed(2).direction(0).acceleration(0.0005)
                     .build());
         }
+
         for (int i = 0; i < 2; i++) {
             double[] spawn = Map.WATER_SPAWN_POINTS.get(c);
             ++c;
@@ -93,7 +71,6 @@ public class Testing extends Application {
                     .build());
         }
 
-        // --- Air vehicles (spawn at airport) ---
         for (int i = 0; i < 2; i++) {
             double[] spawn = Map.AIR_SPAWN_POINTS.get(c);
             ++c;
@@ -103,6 +80,7 @@ public class Testing extends Application {
                     .setCenterZ(0).setMass(10).speed(0.0005).direction(0).vZ(0.01).acceleration(0.0005)
                     .build());
         }
+
         for (int i = 0; i < 1; i++) {
             double[] spawn = Map.AIR_SPAWN_POINTS.get(c);
             ++c;
@@ -113,12 +91,32 @@ public class Testing extends Application {
                     .build());
         }
 
-        // add all to scene
+        HardwareRosBridge hardwareBridge = new HardwareRosBridge(allVehicles);
+        hardwareBridge.setMode(HardwareRosBridge.Mode.AUTO);
+        hardwareBridge.start();
+
+        ControlDashboard.setOnPanelClosed(() -> {
+            hardwareBridge.setMode(HardwareRosBridge.Mode.AUTO);
+        });
+
         for (Vehicle v : allVehicles) {
             v.setStroke(Color.TRANSPARENT);
             v.setFill(Color.TRANSPARENT);
             v.calculateNextPoint();
             v.update();
+
+            v.setOnMouseClicked(e -> {
+                hardwareBridge.selectVehicle(v);
+                hardwareBridge.setMode(HardwareRosBridge.Mode.MANUAL);
+                ControlDashboard.selectVehicle(v);
+            });
+
+            v.imageView.setOnMouseClicked(e -> {
+                hardwareBridge.selectVehicle(v);
+                hardwareBridge.setMode(HardwareRosBridge.Mode.MANUAL);
+                ControlDashboard.selectVehicle(v);
+            });
+
             root.getChildren().addAll(v, v.imageView);
         }
 
@@ -128,20 +126,20 @@ public class Testing extends Application {
                 v.update();
             }
         }));
+
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.play();
-
 
         controlCircleMK controlWindow = new controlCircleMK();
         Stage controlStage = new Stage();
         controlWindow.start(controlStage);
 
-
         stage.setResizable(true);
         stage.setTitle("Vehicle Fleet Simulator");
         stage.setScene(scene);
         stage.show();
-        HelloApplication.setSimulationStage(stage);
+
+        ControlDashboard.setSimulationStage(stage);
     }
 
     public static void main(String[] args) {
