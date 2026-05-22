@@ -18,7 +18,7 @@ import javafx.scene.input.KeyCode;
 
 import java.util.Locale;
 
-public class HelloApplication {
+public class ControlDashboard {
 
     private static Stage controlStage;
     private static AnimationTimer syncTimer;
