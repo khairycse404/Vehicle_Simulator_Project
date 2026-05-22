@@ -452,6 +452,86 @@ public abstract class Vehicle extends Block implements Movable{
             }
         });
     }
+    public void enableControls() {
+        imageView.setFocusTraversable(true);
+        imageView.setOnMousePressed(e -> {
+            lastMouseX = e.getSceneX();
+            lastMouseY = e.getSceneY();
+
+            imageView.requestFocus();
+        });
+        //ASSEM
+        imageView.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                //DropShadow:effect 
+                javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
+                glow.setColor(Color.DODGERBLUE);
+                glow.setRadius(20);
+                glow.setSpread(0.6);
+                imageView.setEffect(glow);
+            } else {
+
+                imageView.setEffect(null);
+            }
+        });
+        imageView.setOnMouseDragged(e -> {
+            double dx = e.getSceneX() - lastMouseX;
+            double dy = e.getSceneY() - lastMouseY;
+
+            move(dx, dy); // move directly instead of changing speed
+
+            lastMouseX = e.getSceneX();
+            lastMouseY = e.getSceneY();
+        });
+
+imageView.setOnMouseClicked(e -> {
+    // فرق بين الكليك والدراج (لو الماوس اتحرك أكتر من 5 بكسل → دراج مش كليك)
+    double movedX = Math.abs(e.getSceneX() - lastMouseX);
+    double movedY = Math.abs(e.getSceneY() - lastMouseY);
+ 
+    if (movedX < 5 && movedY < 5 && e.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+        launchControlPanel();
+    }
+});
+        imageView.setOnKeyPressed(e -> {
+            //assem
+            boolean handled = false;// بسبب هروب الفوكس
+            switch (e.getCode()) {
+                case SPACE, UP -> {
+                    this.moveZ(1);
+                    System.out.println(this.toString() + " ascend " + this.getCenterZ());
+                    handled = true;
+                    this.accelerate(0.8);
+                }
+                case C, DOWN -> {
+                    this.moveZ(-1);
+                    System.out.println(this.toString() + " descend " + this.getCenterZ());
+                    handled = true;
+                    this.accelerate(-0.8);
+                }
+                case LEFT -> {
+                    turnLeft();
+                    handled = true;
+                }
+                case RIGHT -> {
+                    turnRight();
+                    handled = true;
+                }
+
+            }
+            if (handled) {
+                e.consume();//تمنع التشتت
+            }
+        });
+    }
+
+
+public void launchControlPanel() {
+    setControlled(true);
+    HelloApplication.selectVehicle(this);  
+}
+
+    
     /*
     Rotation is handled in Block.rotate()
     the mentioned method insures that Allignment, Direction are set correctly.
